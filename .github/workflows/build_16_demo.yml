@@ -1,0 +1,40 @@
+name: build nodejs v16
+
+on: 
+  workflow_dispatch:
+    inputs:
+      tag_date:
+        description: 'tag date'     
+        required: true
+
+env:
+  VERSION: 16.16.0
+
+jobs:
+  build_windows:
+    name: Windows
+    runs-on: windows-2022
+    steps:
+    - uses: actions/checkout@v2
+    - name: npm install
+      shell: bash
+      run: npm install
+    - name: Run build script
+      continue-on-error: true
+      shell: cmd
+      run: |
+        cd %GITHUB_WORKSPACE%
+        call .\windows_trybuild.cmd ${{env.VERSION}}
+    - name: Run upload script
+      shell: cmd
+      run: |
+        cd %GITHUB_WORKSPACE%
+        call .\windows_64.cmd
+    - name: Rename
+      shell: bash
+      run: |
+        mv puerts-node/nodejs puerts-node/nodejs_16
+    - uses: actions/upload-artifact@v2
+      with:
+        name: nodejs_bin
+        path: puerts-node/**/*
